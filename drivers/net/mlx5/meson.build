@@ -2,9 +2,9 @@
 # Copyright 2018 6WIND S.A.
 # Copyright 2018 Mellanox Technologies, Ltd
 
-if not (is_linux or is_windows)
+if not (is_linux or is_windows or is_freebsd)
     build = false
-    reason = 'only supported on Linux and Windows'
+    reason = 'only supported on Linux, Windows and FreeBSD'
     subdir_done()
 endif
 
@@ -51,7 +51,6 @@ if is_linux
     sources += files(
             'mlx5_flow_hw.c',
             'mlx5_flow_quota.c',
-            'mlx5_flow_verbs.c',
             'mlx5_hws_cnt.c',
             'mlx5_hws_global_actions.c',
             'mlx5_nta_split.c',
@@ -59,7 +58,15 @@ if is_linux
     )
 endif
 
-if is_windows or (mlx5_config.get('HAVE_INFINIBAND_VERBS_H', false) and
+if is_linux or is_freebsd
+    sources += files(
+            'mlx5_flow_verbs.c',
+    )
+endif
+
+# FreeBSD builds without the HWS sources, so it needs the same stubs as a build
+# whose rdma-core has no DV support.
+if is_windows or is_freebsd or (mlx5_config.get('HAVE_INFINIBAND_VERBS_H', false) and
         not mlx5_config.get('HAVE_IBV_FLOW_DV_SUPPORT', false))
     sources += files(
             'mlx5_flow_hw_stubs.c',
@@ -79,8 +86,11 @@ cflags_options = [
         '-Wno-strict-prototypes',
         '-D_BSD_SOURCE',
         '-D_DEFAULT_SOURCE',
-        '-D_XOPEN_SOURCE=600',
 ]
+# _XOPEN_SOURCE hides the BSD-only declarations the FreeBSD layer needs.
+if not is_freebsd
+    cflags_options += '-D_XOPEN_SOURCE=600'
+endif
 foreach option:cflags_options
     if cc.has_argument(option)
         cflags += option
