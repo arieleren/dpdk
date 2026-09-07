@@ -284,6 +284,14 @@ if openssl_dep.found()
 endif
 
 # check for pcap
+# XXX BRINGUP-ONLY WORKAROUND, NOT FOR UPSTREAM: FreeBSD base libpcap has
+# DT_NEEDED entries on the base libibverbs, libmlx5 and libbnxtre, so linking it
+# into a binary that also uses the ports rdma-core makes the base providers
+# demand an IBVERBS_PRIVATE version the ports libibverbs does not export, and
+# the process dies in the loader. Skip pcap entirely until the base/ports
+# libibverbs conflict is resolved.
+pcap_dep = dependency('', required: false)
+if false
 pcap_dep = dependency('libpcap', required: false, method: 'pkg-config')
 pcap_lib = is_windows ? 'wpcap' : 'pcap'
 if not pcap_dep.found()
@@ -294,6 +302,7 @@ if (pcap_dep.found() and cc.has_header('pcap.h', dependencies: pcap_dep)
         and cc.links(min_c_code, dependencies: pcap_dep))
     dpdk_conf.set('RTE_HAS_LIBPCAP', 1)
     dpdk_extra_ldflags += '-l@0@'.format(pcap_lib)
+endif
 endif
 
 # for clang 32-bit compiles we need libatomic for 64-bit atomic ops
