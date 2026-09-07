@@ -8140,7 +8140,7 @@ mlx5_flow_list_flush(struct rte_eth_dev *dev, enum mlx5_flow_type type,
 	struct rte_pmd_mlx5_flow_engine_mode_info *mode_info = &priv->mode_info;
 	struct mlx5_dv_flow_info *flow_info;
 
-#ifdef HAVE_IBV_FLOW_DV_SUPPORT
+#ifdef HAVE_MLX5_HWS_SUPPORT
 	if (priv->sh->config.dv_flow_en == 2 &&
 	    type == MLX5_FLOW_TYPE_GEN) {
 		priv->hws_rule_flushing = true;
@@ -10453,8 +10453,10 @@ mlx5_flow_dev_dump(struct rte_eth_dev *dev, struct rte_flow *flow_idx,
 		if (mlx5_flow_dev_dump_sh_all(dev, file, error))
 			return -EINVAL;
 
+#ifdef HAVE_MLX5_HWS_SUPPORT
 		if (sh->config.dv_flow_en == 2)
 			return mlx5dr_debug_dump(priv->dr_ctx, file);
+#endif
 #endif
 		return mlx5_devx_cmd_flow_dump(sh->fdb_domain,
 					       sh->rx_domain,

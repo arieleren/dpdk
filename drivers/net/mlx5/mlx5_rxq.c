@@ -3058,10 +3058,14 @@ __mlx5_hrxq_remove(struct rte_eth_dev *dev, struct mlx5_hrxq *hrxq)
 	bool deref_rxqs = true;
 
 #ifdef HAVE_IBV_FLOW_DV_SUPPORT
+#ifdef HAVE_MLX5_HWS_SUPPORT
 	if (hrxq->hws_flags)
 		mlx5dr_action_destroy(hrxq->action);
 	else
 		mlx5_glue->destroy_flow_action(hrxq->action);
+#else
+	mlx5_glue->destroy_flow_action(hrxq->action);
+#endif
 #endif
 	priv->obj_ops.hrxq_destroy(hrxq);
 	if (!hrxq->standalone) {

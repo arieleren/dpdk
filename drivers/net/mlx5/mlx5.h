@@ -35,7 +35,11 @@
 #include "mlx5_autoconf.h"
 #include "rte_pmd_mlx5.h"
 #if defined(HAVE_IBV_FLOW_DV_SUPPORT) || !defined(HAVE_INFINIBAND_VERBS_H)
-#ifndef RTE_EXEC_ENV_WINDOWS
+/*
+ * The hardware steering engine lives in drivers/net/mlx5/hws, which meson only
+ * builds on Linux, so FreeBSD has to take the same path as a build without HWS.
+ */
+#if !defined(RTE_EXEC_ENV_WINDOWS) && !defined(RTE_EXEC_ENV_FREEBSD)
 #define HAVE_MLX5_HWS_SUPPORT 1
 #endif
 #include "hws/mlx5dr.h"
