@@ -171,7 +171,8 @@ mlx5_os_capabilities_prepare(struct mlx5_dev_ctx_shared *sh)
 	}
 	memset(&sh->dev_cap, 0, sizeof(struct mlx5_dev_cap));
 	if (mlx5_dev_is_pci(cdev->dev))
-		sh->dev_cap.vf = mlx5_dev_is_vf_pci(RTE_DEV_TO_PCI(cdev->dev));
+		sh->dev_cap.vf = mlx5_dev_is_vf_pci(RTE_BUS_DEVICE(cdev->dev,
+			struct rte_pci_device));
 	else
 		sh->dev_cap.sf = 1;
 	sh->dev_cap.max_qp_wr = attr_ex.orig_attr.max_qp_wr;
@@ -516,11 +517,11 @@ mlx5_alloc_shared_dr(struct rte_eth_dev *eth_dev)
 			sh->mreg_cp_tbl = mlx5_hlist_create(MLX5_FLOW_MREG_HNAME,
 							    MLX5_FLOW_MREG_HTABLE_SZ,
 							    false, true, eth_dev,
-							    flow_nta_mreg_create_cb,
-							    flow_dv_mreg_match_cb,
-							    flow_nta_mreg_remove_cb,
-							    flow_dv_mreg_clone_cb,
-							    flow_dv_mreg_clone_free_cb);
+							    mlx5_flow_nta_mreg_create_cb,
+							    mlx5_flow_dv_mreg_match_cb,
+							    mlx5_flow_nta_mreg_remove_cb,
+							    mlx5_flow_dv_mreg_clone_cb,
+							    mlx5_flow_dv_mreg_clone_free_cb);
 			if (!sh->mreg_cp_tbl) {
 				err = ENOMEM;
 				goto error;
@@ -532,41 +533,41 @@ mlx5_alloc_shared_dr(struct rte_eth_dev *eth_dev)
 	/* Init port id action list. */
 	snprintf(s, sizeof(s), "%s_port_id_action_list", sh->ibdev_name);
 	sh->port_id_action_list = mlx5_list_create(s, sh, true,
-						   flow_dv_port_id_create_cb,
-						   flow_dv_port_id_match_cb,
-						   flow_dv_port_id_remove_cb,
-						   flow_dv_port_id_clone_cb,
-						 flow_dv_port_id_clone_free_cb);
+						   mlx5_flow_dv_port_id_create_cb,
+						   mlx5_flow_dv_port_id_match_cb,
+						   mlx5_flow_dv_port_id_remove_cb,
+						   mlx5_flow_dv_port_id_clone_cb,
+						 mlx5_flow_dv_port_id_clone_free_cb);
 	if (!sh->port_id_action_list)
 		goto error;
 	/* Init push vlan action list. */
 	snprintf(s, sizeof(s), "%s_push_vlan_action_list", sh->ibdev_name);
 	sh->push_vlan_action_list = mlx5_list_create(s, sh, true,
-						    flow_dv_push_vlan_create_cb,
-						    flow_dv_push_vlan_match_cb,
-						    flow_dv_push_vlan_remove_cb,
-						    flow_dv_push_vlan_clone_cb,
-					       flow_dv_push_vlan_clone_free_cb);
+						    mlx5_flow_dv_push_vlan_create_cb,
+						    mlx5_flow_dv_push_vlan_match_cb,
+						    mlx5_flow_dv_push_vlan_remove_cb,
+						    mlx5_flow_dv_push_vlan_clone_cb,
+					       mlx5_flow_dv_push_vlan_clone_free_cb);
 	if (!sh->push_vlan_action_list)
 		goto error;
 	/* Init sample action list. */
 	snprintf(s, sizeof(s), "%s_sample_action_list", sh->ibdev_name);
 	sh->sample_action_list = mlx5_list_create(s, sh, true,
-						  flow_dv_sample_create_cb,
-						  flow_dv_sample_match_cb,
-						  flow_dv_sample_remove_cb,
-						  flow_dv_sample_clone_cb,
-						  flow_dv_sample_clone_free_cb);
+						  mlx5_flow_dv_sample_create_cb,
+						  mlx5_flow_dv_sample_match_cb,
+						  mlx5_flow_dv_sample_remove_cb,
+						  mlx5_flow_dv_sample_clone_cb,
+						  mlx5_flow_dv_sample_clone_free_cb);
 	if (!sh->sample_action_list)
 		goto error;
 	/* Init dest array action list. */
 	snprintf(s, sizeof(s), "%s_dest_array_list", sh->ibdev_name);
 	sh->dest_array_list = mlx5_list_create(s, sh, true,
-					       flow_dv_dest_array_create_cb,
-					       flow_dv_dest_array_match_cb,
-					       flow_dv_dest_array_remove_cb,
-					       flow_dv_dest_array_clone_cb,
-					      flow_dv_dest_array_clone_free_cb);
+					       mlx5_flow_dv_dest_array_create_cb,
+					       mlx5_flow_dv_dest_array_match_cb,
+					       mlx5_flow_dv_dest_array_remove_cb,
+					       mlx5_flow_dv_dest_array_clone_cb,
+					      mlx5_flow_dv_dest_array_clone_free_cb);
 	if (!sh->dest_array_list)
 		goto error;
 #else
@@ -642,11 +643,11 @@ mlx5_alloc_shared_dr(struct rte_eth_dev *eth_dev)
 			sh->mreg_cp_tbl = mlx5_hlist_create(MLX5_FLOW_MREG_HNAME,
 							    MLX5_FLOW_MREG_HTABLE_SZ,
 							    false, true, eth_dev,
-							    flow_dv_mreg_create_cb,
-							    flow_dv_mreg_match_cb,
-							    flow_dv_mreg_remove_cb,
-							    flow_dv_mreg_clone_cb,
-							    flow_dv_mreg_clone_free_cb);
+							    mlx5_flow_dv_mreg_create_cb,
+							    mlx5_flow_dv_mreg_match_cb,
+							    mlx5_flow_dv_mreg_remove_cb,
+							    mlx5_flow_dv_mreg_clone_cb,
+							    mlx5_flow_dv_mreg_clone_free_cb);
 			if (!sh->mreg_cp_tbl) {
 				err = ENOMEM;
 				goto error;
@@ -761,7 +762,7 @@ mlx5_destroy_send_to_kernel_action(struct mlx5_dev_ctx_shared *sh)
 			struct mlx5_flow_tbl_resource *tbl =
 					sh->send_to_kernel_action[i].tbl;
 
-			flow_dv_tbl_resource_release(sh, tbl);
+			mlx5_flow_dv_tbl_resource_release(sh, tbl);
 			sh->send_to_kernel_action[i].tbl = NULL;
 		}
 	}
@@ -1337,7 +1338,6 @@ err_secondary:
 	priv->sh = sh;
 	priv->dev_port = spawn->phys_port;
 	priv->pci_dev = spawn->pci_dev;
-	priv->mtu = RTE_ETHER_MTU;
 	/* The internal functions that rely on Netlink sockets are stubbed. */
 	priv->nl_socket_rdma = nl_rdma;
 	priv->nl_socket_route = -1;
@@ -1609,14 +1609,13 @@ err_secondary:
 	}
 #endif
 	/* Get actual MTU if possible. */
-	err = mlx5_get_mtu(eth_dev, &priv->mtu);
+	err = mlx5_get_mtu(eth_dev, &eth_dev->data->mtu);
 	if (err) {
 		err = rte_errno;
 		goto error;
 	}
-	eth_dev->data->mtu = priv->mtu;
 	DRV_LOG(DEBUG, "port %u MTU is %u", eth_dev->data->port_id,
-		priv->mtu);
+		eth_dev->data->mtu);
 	/* Initialize burst functions to prevent crashes before link-up. */
 	eth_dev->rx_pkt_burst = rte_eth_pkt_burst_dummy;
 	eth_dev->tx_pkt_burst = rte_eth_pkt_burst_dummy;
@@ -1663,7 +1662,7 @@ err_secondary:
 	/* Create context for virtual machine VLAN workaround. */
 	priv->vmwa_context = mlx5_vlan_vmwa_init(eth_dev, spawn->ifindex);
 	if (mlx5_devx_obj_ops_en(sh)) {
-		priv->obj_ops = devx_obj_ops;
+		priv->obj_ops = mlx5_devx_obj_ops;
 		mlx5_queue_counter_id_prepare(eth_dev);
 		priv->obj_ops.lb_dummy_queue_create =
 					mlx5_rxq_ibv_obj_dummy_lb_create;
@@ -1675,7 +1674,7 @@ err_secondary:
 		err = ENOTSUP;
 		goto error;
 	} else {
-		priv->obj_ops = ibv_obj_ops;
+		priv->obj_ops = mlx5_ibv_obj_ops;
 	}
 	if (sh->config.tx_pp &&
 	    priv->obj_ops.txq_obj_new != mlx5_txq_devx_obj_new) {
@@ -1772,7 +1771,7 @@ err_secondary:
 			}
 		}
 		if (priv->vport_meta_mask)
-			flow_hw_set_port_info(eth_dev);
+			mlx5_flow_hw_set_port_info(eth_dev);
 		if (priv->sh->config.dv_esw_en &&
 		    priv->sh->config.dv_xmeta_en != MLX5_XMETA_MODE_LEGACY &&
 		    priv->sh->config.dv_xmeta_en != MLX5_XMETA_MODE_META32_HWS) {
@@ -1783,7 +1782,7 @@ err_secondary:
 				goto error;
 		}
 		if (priv->sh->config.dv_esw_en &&
-		    flow_hw_create_vport_action(eth_dev)) {
+		    mlx5_flow_hw_create_vport_action(eth_dev)) {
 			DRV_LOG(ERR, "port %u failed to create vport action",
 				eth_dev->data->port_id);
 			err = EINVAL;
@@ -1824,7 +1823,7 @@ error:
 		    priv->sh &&
 		    priv->sh->config.dv_flow_en == 2 &&
 		    priv->sh->config.dv_esw_en)
-			flow_hw_destroy_vport_action(eth_dev);
+			mlx5_flow_hw_destroy_vport_action(eth_dev);
 #endif
 		if (priv->sh)
 			mlx5_os_free_shared_dr(priv);
@@ -1893,7 +1892,7 @@ mlx5_os_pci_probe_pf(struct mlx5_common_device *cdev,
 {
 	struct ibv_device **ibv_list;
 	struct ibv_device *ibv_dev = NULL;
-	struct rte_pci_device *pci_dev = RTE_DEV_TO_PCI(cdev->dev);
+	struct rte_pci_device *pci_dev = RTE_BUS_DEVICE(cdev->dev, struct rte_pci_device);
 	struct rte_eth_devargs eth_da = *req_eth_da;
 	struct rte_pci_addr owner_pci = pci_dev->addr;
 	struct mlx5_dev_spawn_data spawn = {
@@ -2043,7 +2042,7 @@ static int
 mlx5_os_pci_probe(struct mlx5_common_device *cdev,
 		  struct mlx5_kvargs_ctrl *mkvlist)
 {
-	struct rte_pci_device *pci_dev = RTE_DEV_TO_PCI(cdev->dev);
+	struct rte_pci_device *pci_dev = RTE_BUS_DEVICE(cdev->dev, struct rte_pci_device);
 	struct rte_eth_devargs eth_da = { .nb_ports = 0 };
 	int ret = 0;
 	uint16_t p;
@@ -2123,6 +2122,50 @@ void
 mlx5_os_net_cleanup(void)
 {
 	mlx5_pmd_socket_uninit();
+}
+
+/**
+ * Initialize default shared configuration for the flow engine.
+ *
+ * Hardware steering is not built here, so request the DV engine and let
+ * mlx5_os_fixup_flow_en()'s caller fall back to Verbs when the device
+ * capabilities say software steering is unavailable.
+ *
+ * @param[out] config
+ *   Pointer to shared configuration.
+ * @param[in] sh
+ *   Pointer to shared device context.
+ */
+void
+mlx5_os_default_flow_config(struct mlx5_sh_config *config,
+			    struct mlx5_dev_ctx_shared *sh __rte_unused)
+{
+	config->dv_flow_en = 1;
+	config->allow_duplicate_pattern = 1;
+}
+
+/**
+ * Adjust the flow engine selection for this platform.
+ *
+ * Hardware steering is the only mode that needs a fixup and it is not
+ * available on FreeBSD, so nothing to do here.
+ */
+void
+mlx5_os_fixup_flow_en(struct mlx5_sh_config *config __rte_unused,
+		      struct mlx5_dev_ctx_shared *sh __rte_unused)
+{
+}
+
+/**
+ * Adjust the duplicate pattern setting for this platform.
+ *
+ * Only hardware steering disallows duplicate patterns, so nothing to do.
+ */
+void
+mlx5_os_fixup_duplicate_pattern(struct mlx5_sh_config *config __rte_unused,
+				struct mlx5_kvargs_ctrl *mkvlist __rte_unused,
+				const char *key __rte_unused)
+{
 }
 
 /**

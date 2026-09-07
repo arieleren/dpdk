@@ -669,7 +669,7 @@ mlx5_os_get_ibv_dev(const struct rte_device *dev)
 
 	/* Every mlx5 device is a PCI device here; there is no auxiliary bus. */
 	if (mlx5_dev_is_pci(dev))
-		ibv = mlx5_os_get_ibv_device(RTE_DEV_TO_PCI_CONST(dev));
+		ibv = mlx5_os_get_ibv_device(RTE_BUS_DEVICE(dev, const struct rte_pci_device));
 	else
 		ibv = NULL;
 	if (ibv == NULL) {
@@ -942,7 +942,7 @@ mlx5_os_wrapped_mkey_create(void *ctx, void *pd, uint32_t pdn, void *addr,
 	struct mlx5_devx_obj *mkey;
 	struct ibv_mr *ibv_mr = mlx5_glue->reg_mr(pd, addr, length,
 						  IBV_ACCESS_LOCAL_WRITE |
-						  (haswell_broadwell_cpu ? 0 :
+						  (mlx5_haswell_broadwell_cpu ? 0 :
 						  IBV_ACCESS_RELAXED_ORDERING));
 
 	if (!ibv_mr) {
