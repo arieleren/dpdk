@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright 2019 Mellanox Technologies, Ltd
 
-if not (is_linux or is_windows)
+if not (is_linux or is_windows or is_freebsd)
     build = false
-    reason = 'only supported on Linux and Windows'
+    reason = 'only supported on Linux, Windows and FreeBSD'
     subdir_done()
 endif
 if is_windows and not is_ms_linker and not meson.is_cross_build()
@@ -31,8 +31,11 @@ cflags_options = [
         '-Wno-strict-prototypes',
         '-D_BSD_SOURCE',
         '-D_DEFAULT_SOURCE',
-        '-D_XOPEN_SOURCE=600',
 ]
+# _XOPEN_SOURCE hides the BSD-only declarations the FreeBSD layer needs.
+if not is_freebsd
+    cflags_options += '-D_XOPEN_SOURCE=600'
+endif
 foreach option:cflags_options
     if cc.has_argument(option)
         cflags += option
