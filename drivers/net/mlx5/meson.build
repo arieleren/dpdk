@@ -73,7 +73,7 @@ if is_windows or is_freebsd or (mlx5_config.get('HAVE_INFINIBAND_VERBS_H', false
     )
 endif
 
-if is_linux and (dpdk_conf.has('RTE_ARCH_X86_64')
+if (is_linux or is_freebsd) and (dpdk_conf.has('RTE_ARCH_X86_64')
               or dpdk_conf.has('RTE_ARCH_ARM64')
               or dpdk_conf.has('RTE_ARCH_PPC_64'))
     sources += files('mlx5_rxtx_vec.c')
