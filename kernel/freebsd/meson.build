@@ -13,6 +13,15 @@ kmod_cflags = ['-I' + dpdk_build_root,
         '-I' + join_paths(dpdk_source_root, 'config'),
         '-include rte_config.h']
 
+# bsd.kmod.mk defaults SYSDIR to /usr/src/sys, which is not necessarily the
+# tree the running kernel was built from. A module built against a mismatched
+# tree fails to load with "depends on kernel - not available or version
+# mismatch", so allow the kernel sources to be selected explicitly.
+kmod_make_args = []
+if get_option('kernel_dir') != ''
+    kmod_make_args += 'SYSDIR=' + get_option('kernel_dir')
+endif
+
 # to avoid warnings due to race conditions with creating the dev_if.h, etc.
 # files, serialize the kernel module builds. Each module will depend on
 # previous ones
@@ -27,7 +36,7 @@ foreach k:kmods
                 'KMOD_SRC=@INPUT1@',
                 'KMOD=' + k,
                 'KMOD_CFLAGS=' + ' '.join(kmod_cflags),
-                'CC=clang'],
+                'CC=clang'] + kmod_make_args,
             depends: built_kmods, # make each module depend on prev
             build_by_default: true,
             install: true,
