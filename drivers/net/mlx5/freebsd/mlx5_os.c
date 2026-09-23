@@ -155,6 +155,7 @@ mlx5_os_capabilities_prepare(struct mlx5_dev_ctx_shared *sh)
 #ifdef HAVE_IBV_MLX5_MOD_SWP
 	dv_attr.comp_mask |= MLX5DV_CONTEXT_MASK_SWP;
 #endif
+	dv_attr.comp_mask |= MLX5DV_CONTEXT_MASK_CQE_COMPRESION;
 #ifdef HAVE_IBV_DEVICE_TUNNEL_SUPPORT
 	dv_attr.comp_mask |= MLX5DV_CONTEXT_MASK_TUNNEL_OFFLOADS;
 #endif
@@ -213,12 +214,21 @@ mlx5_os_capabilities_prepare(struct mlx5_dev_ctx_shared *sh)
 		sh->dev_cap.mps = MLX5_MPW_DISABLED;
 	}
 	/*
-	 * Asking for a compressed CQE means passing the mlx5 CQE compression
-	 * extension to ibv_create_cq, and the FreeBSD mlx5_ib driver does not
-	 * implement it, so the CQ creation fails outright. Report it as
-	 * unsupported and let the generic configuration code turn it off.
+	 * CQE compression needs mlx5_ib to pass cqe_comp_en through to
+	 * create_cq. Kernels without that support advertise no compression
+	 * capability and reject the CQ outright if compression is requested
+	 * anyway, so gate on the advertised capability rather than assuming it.
 	 */
-	DRV_LOG(DEBUG, "Rx CQE compression is not supported.");
+	if (dv_attr.cqe_comp_caps.max_num != 0) {
+#if (RTE_CACHE_LINE_SIZE == 128)
+		if (dv_attr.flags & MLX5DV_CONTEXT_FLAGS_CQE_128B_COMP)
+			sh->dev_cap.cqe_comp = 1;
+#else
+		sh->dev_cap.cqe_comp = 1;
+#endif
+	}
+	DRV_LOG(DEBUG, "Rx CQE compression is %ssupported.",
+		sh->dev_cap.cqe_comp ? "" : "not ");
 #ifdef HAVE_IBV_DEVICE_MPLS_SUPPORT
 	sh->dev_cap.mpls_en =
 		((dv_attr.tunnel_offloads_caps &
